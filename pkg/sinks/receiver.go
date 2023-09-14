@@ -7,6 +7,7 @@ type ReceiverConfig struct {
 	Name          string               `yaml:"name"`
 	InMemory      *InMemoryConfig      `yaml:"inMemory"`
 	Webhook       *WebhookConfig       `yaml:"webhook"`
+	QyWeChat      *QyWeChatConfig      `yaml:"qywechat"`
 	File          *FileConfig          `yaml:"file"`
 	Syslog        *SyslogConfig        `yaml:"syslog"`
 	Stdout        *StdoutConfig        `yaml:"stdout"`
@@ -108,6 +109,10 @@ func (r *ReceiverConfig) GetSink() (Sink, error) {
 
 	if r.Teams != nil {
 		return NewTeamsSink(r.Teams)
+	}
+
+	if r.QyWeChat != nil {
+		return NewQyWeChatSink(r.QyWeChat)
 	}
 
 	if r.BigQuery != nil {

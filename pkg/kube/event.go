@@ -69,3 +69,17 @@ func (e *EnhancedEvent) GetTimestampISO8601() string {
 	layout := "2006-01-02T15:04:05.000Z"
 	return timestamp.Format(layout)
 }
+
+func (e *EnhancedEvent) GetTimestampISO8601ForSH() string {
+	var (
+		timestamp = e.FirstTimestamp.Time
+		layout    = "2006-01-02T15:04:05.000Z"
+		cstSh, _  = time.LoadLocation("Asia/Shanghai")
+	)
+
+	if timestamp.IsZero() {
+		timestamp = e.EventTime.Time
+	}
+
+	return timestamp.In(cstSh).Format(layout)
+}

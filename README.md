@@ -1,5 +1,7 @@
 # kubernetes-event-exporter
 
+> **ChangeLog-20230914**: develop based on this following project，add feature: support qiye wechat as one of sinks
+
 > **Note**: This is an active fork of [Opsgenie Kubernetes Event Exporter](https://github.com/opsgenie/kubernetes-event-exporter)
 since that is not maintained since November 2021. Development is sponsored by [Resmo](https://www.resmo.com).
 
@@ -32,7 +34,7 @@ resources:
 
 ### Helm
 
-Please use [Bitnami Chart](https://github.com/bitnami/charts/tree/main/bitnami/kubernetes-event-exporter/) which is 
+Please use [Bitnami Chart](https://github.com/bitnami/charts/tree/main/bitnami/kubernetes-event-exporter/) which is
 comprehensive.
 
 ## Configuration
@@ -76,21 +78,24 @@ receivers:
 
 ## Using Secrets
 
-In your config file, you can refer to environment variables as `${API_KEY}` therefore you can use ConfigMap or Secrets 
+In your config file, you can refer to environment variables as `${API_KEY}` therefore you can use ConfigMap or Secrets
 to keep the config file clean of secrets.
 
-## Troubleshoot "Events Discarded" warning:
+## Troubleshoot "Events Discarded" warning
 
-- If there are `client-side throttling` warnings in the event-exporter log:
+* If there are `client-side throttling` warnings in the event-exporter log:
   Adjust the following values in configuration:
+
     ```
     kubeQPS: 100
     kubeBurst: 500
     ```
+
   > `Burst` to roughly match your events per minute
   > `QPS`   to be 1/5 of the burst
-- If there is no request throttling, but events are still dropped:
+* If there is no request throttling, but events are still dropped:
   Consider increasing events cut off age
+
     ```
     maxEventAgeSeconds: 60
     ```
@@ -170,6 +175,7 @@ receivers:
         serverName: # optional, the domain, the certificate was issued for, in case it doesn't match the hostname used for the connection
         caFile: # optional, path to the CA file of the trusted authority the cert was signed with
 ```
+
 ### OpenSearch
 
 [OpenSearch](https://opensearch.org/) is a community-driven, open source search and analytics suite derived from Apache 2.0 licensed Elasticsearch 7.10.2 & Kibana 7.10.2.
@@ -256,6 +262,7 @@ receivers:
       region: us-west-2
       layout: # Optional
 ```
+
 ### SNS
 
 SNS is an AWS service for highly durable pub/sub messaging system.
@@ -517,4 +524,22 @@ receivers:
       streamLabels:
         foo: bar
       url: http://127.0.0.1:3100/loki/api/v1/push
+```
+
+# QiYe WeChat
+
+```yaml
+receivers:
+  - name: "qywechat"
+    qywechat:
+      endpoint: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxx-xxx-xxx
+      layout: 
+        cluster: sit-azure
+        type: "{{ .Type }}"
+        namespace: "{{ .InvolvedObject.Namespace }}"
+        kind: "{{ .InvolvedObject.Kind }}"
+        object: "{{ .InvolvedObject.Name }}"
+        reason: "{{ .Reason }}"
+        time: "{{ .GetTimestampISO8601ForSH }}"
+        message: "{{ .Message }}"
 ```
